@@ -34,3 +34,9 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## Language materials
+
+The alphabet and bilingual story PDFs are stored in `public/materials` and are shown on the Language page.
+
+The story video is intentionally kept outside the repository. Upload it to YouTube (an unlisted video is supported), Vimeo, or a video CDN, then set `STORY_VIDEO_URL` in `.env.local` and in the deployment environment. Full YouTube and Vimeo links are converted into embedded players automatically. Direct `.mp4`, `.webm`, and `.ogg` links use the browser video player with loading disabled until the visitor presses play.

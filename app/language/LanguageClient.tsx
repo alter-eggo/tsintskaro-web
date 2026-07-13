@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { addDictionaryWord } from "@/app/language/actions";
+import { LanguageResources } from "@/components/language/LanguageResources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -68,6 +69,7 @@ const PART_OF_SPEECH_OPTIONS = [
 
 type LanguageClientProps = {
   entries: DictionaryEntry[];
+  videoUrl?: string;
 };
 
 type FormStatus =
@@ -92,7 +94,7 @@ function matchesPartOfSpeech(
   return variants.includes(normalized);
 }
 
-export function LanguageClient({ entries }: LanguageClientProps) {
+export function LanguageClient({ entries, videoUrl }: LanguageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
@@ -563,6 +565,8 @@ export function LanguageClient({ entries }: LanguageClientProps) {
           )}
         </CardContent>
       </Card>
+
+      <LanguageResources videoUrl={videoUrl} />
     </div>
   );
 }

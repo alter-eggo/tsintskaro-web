@@ -10,5 +10,10 @@ export default async function LanguagePage() {
     compareTsintskaroWords(a.word, b.word)
   );
 
-  return <LanguageClient entries={entries} />;
+  return (
+    <LanguageClient
+      entries={entries}
+      videoUrl={process.env.STORY_VIDEO_URL}
+    />
+  );
 }
