@@ -13,6 +13,7 @@ import { FamilyCard } from "@/components/families/FamilyCard";
 import { FamilySearch } from "@/components/families/FamilySearch";
 import { FamilyStatistics } from "@/components/families/FamilyStatistics";
 import { FamilyDetailModal } from "@/components/families/FamilyDetailModal";
+import { GraveyardSplatSection } from "@/components/families/GraveyardSplatSection";
 
 export default function FamiliesPage() {
   const [filteredFamilies, setFilteredFamilies] =
@@ -43,6 +44,9 @@ export default function FamiliesPage() {
           Исследуйте генеалогическое древо и семейные связи цинцкаройских греков
         </p>
       </div>
+
+      {/* Digital heritage */}
+      <GraveyardSplatSection />
 
       {/* Statistics */}
       <FamilyStatistics statistics={familyStatistics} />

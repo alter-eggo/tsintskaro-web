@@ -130,7 +130,7 @@ export const familiesData: Family[] = tsintskaroSurnames.map(
     origin: "Цинцкаро",
     currentLocations: ["Россия", "Греция", "Германия"],
     generation: 2,
-    totalMembers: Math.floor(Math.random() * 150) + 50,
+    totalMembers: 50 + ((index * 73 + 29) % 150),
     description: `Семья ${surname} — одна из коренных цинцкаройских семей.`,
     photos: [],
     stories: [],
