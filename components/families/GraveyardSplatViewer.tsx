@@ -25,11 +25,19 @@ import {
   LoaderCircle,
   MousePointer2,
   RotateCcw,
+  Shrink,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
-const SPLAT_URL = "/models/tsintskaro-graveyard/meta.json";
+const SPLAT_URL = "/models/tsintskaro-graveyard-streamed/lod-meta.json";
+const SPLAT_BUDGET = 1_500_000;
+const LOD_BASE_DISTANCE = 0.25;
+const LOD_MULTIPLIER = 3;
+const INITIAL_STREAMING_LOD = 3;
+const STREAMING_LOD_DISTANCE_RATIOS = [0.2, 0.4, 0.7] as const;
 
 const CAMERA_POSE = {
   position: [2.8653907775878906, -9.611495971679688, -0.18310749530792236],
@@ -49,12 +57,22 @@ const MOVE_SPEED = 4;
 const MOVE_ACCELERATION_DAMPING = 0.992;
 const MOVE_DECELERATION_DAMPING = 0.993;
 const WHEEL_ZOOM_SPEED = 0.001;
+const MAX_WHEEL_ZOOM_DELTA = 200;
+const MIN_PINCH_ZOOM_SCALE = 0.8;
+const MAX_PINCH_ZOOM_SCALE = 1.25;
+const ZOOM_BUTTON_SCALE = 0.8;
+const MIN_CAMERA_DISTANCE = 0.02;
+const MAX_CAMERA_NEAR_LIMIT = 0.25;
 const MIN_PITCH = -90;
 const MAX_PITCH = 90;
 const MIN_SCENE_RADIUS = 0.5;
 
 type ViewerStatus = "loading" | "ready" | "error";
 type DragMode = "orbit" | "pan";
+type CameraControls = {
+  reset: () => void;
+  zoom: (scale: number) => void;
+};
 
 type PointerPosition = {
   x: number;
@@ -65,9 +83,44 @@ type PointerPosition = {
 export function GraveyardSplatViewer() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const frameRef = useRef<HTMLDivElement>(null);
-  const resetCameraRef = useRef<(() => void) | null>(null);
+  const cameraControlsRef = useRef<CameraControls | null>(null);
   const [status, setStatus] = useState<ViewerStatus>("loading");
   const [progress, setProgress] = useState(0);
+  const [isViewportFullscreen, setIsViewportFullscreen] = useState(false);
+  const [isNativeFullscreen, setIsNativeFullscreen] = useState(false);
+  const isFullscreen = isViewportFullscreen || isNativeFullscreen;
+
+  useEffect(() => {
+    const syncNativeFullscreen = () => {
+      setIsNativeFullscreen(document.fullscreenElement === frameRef.current);
+    };
+
+    document.addEventListener("fullscreenchange", syncNativeFullscreen);
+    return () => {
+      document.removeEventListener("fullscreenchange", syncNativeFullscreen);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!isViewportFullscreen) {
+      return;
+    }
+
+    const previousBodyOverflow = document.body.style.overflow;
+    const exitOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsViewportFullscreen(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    document.addEventListener("keydown", exitOnEscape);
+
+    return () => {
+      document.body.style.overflow = previousBodyOverflow;
+      document.removeEventListener("keydown", exitOnEscape);
+    };
+  }, [isViewportFullscreen]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -109,6 +162,7 @@ export function GraveyardSplatViewer() {
 
         app = new AppBase(canvas);
         app.init(options);
+        app.scene.gsplat.splatBudget = SPLAT_BUDGET;
         app.setCanvasFillMode(
           FILLMODE_NONE,
           Math.max(1, frame.clientWidth),
@@ -146,6 +200,36 @@ export function GraveyardSplatViewer() {
         let gestureDistance = 0;
         let gestureMidX = 0;
         let gestureMidY = 0;
+        let splatEntity: Entity | null = null;
+
+        const getMinimumStreamingLod = () => {
+          const authoredDistance = Math.sqrt(
+            (CAMERA_POSE.position[0] - CAMERA_POSE.target[0]) ** 2 +
+              (CAMERA_POSE.position[1] - CAMERA_POSE.target[1]) ** 2 +
+              (CAMERA_POSE.position[2] - CAMERA_POSE.target[2]) ** 2,
+          );
+          const distanceRatio = distance / authoredDistance;
+
+          if (distanceRatio < STREAMING_LOD_DISTANCE_RATIOS[0]) {
+            return 0;
+          }
+          if (distanceRatio < STREAMING_LOD_DISTANCE_RATIOS[1]) {
+            return 1;
+          }
+          if (distanceRatio < STREAMING_LOD_DISTANCE_RATIOS[2]) {
+            return 2;
+          }
+          return INITIAL_STREAMING_LOD;
+        };
+
+        const syncMinimumStreamingLod = () => {
+          const minimumLod = getMinimumStreamingLod();
+          frame.dataset.lodRangeMin = String(minimumLod);
+
+          if (splatEntity?.gsplat) {
+            splatEntity.gsplat.lodRangeMin = minimumLod;
+          }
+        };
 
         const updateCameraPosition = () => {
           const yawRadians = (yaw * Math.PI) / 180;
@@ -163,6 +247,8 @@ export function GraveyardSplatViewer() {
           updateCameraPosition();
           camera.setPosition(cameraPosition);
           camera.lookAt(target);
+          frame.dataset.cameraDistance = distance.toFixed(6);
+          syncMinimumStreamingLod();
         };
 
         const getFrameDistance = (radius: number) => {
@@ -171,9 +257,17 @@ export function GraveyardSplatViewer() {
         };
 
         const clampDistance = (value: number) => {
-          const minDistance = Math.max(sceneRadius * 0.02, 0.02);
+          const minDistance = Math.max(
+            MIN_CAMERA_DISTANCE,
+            Math.min(sceneRadius * 0.02, MAX_CAMERA_NEAR_LIMIT),
+          );
           const maxDistance = Math.max(sceneRadius * 40, 30);
           return Math.max(minDistance, Math.min(maxDistance, value));
+        };
+
+        const zoomCamera = (scale: number) => {
+          distance = clampDistance(distance * scale);
+          updateCamera();
         };
 
         const damp = (damping: number, deltaTime: number) =>
@@ -291,8 +385,17 @@ export function GraveyardSplatViewer() {
           };
         };
 
+        const clearPointerGesture = () => {
+          pointers.clear();
+          gestureDistance = 0;
+          dragMode = null;
+        };
+
         const onPointerDown = (event: PointerEvent) => {
           canvas.focus({ preventScroll: true });
+          if (event.pointerType === "touch" && event.isPrimary) {
+            clearPointerGesture();
+          }
           pointers.set(event.pointerId, {
             x: event.clientX,
             y: event.clientY,
@@ -327,15 +430,19 @@ export function GraveyardSplatViewer() {
           const gesture = getTouchGesture();
           if (gesture) {
             if (gestureDistance > 0 && gesture.distance > 0) {
-              distance = clampDistance(
-                distance * (gestureDistance / gesture.distance),
+              const pinchScale = Math.max(
+                MIN_PINCH_ZOOM_SCALE,
+                Math.min(
+                  MAX_PINCH_ZOOM_SCALE,
+                  gestureDistance / gesture.distance,
+                ),
               );
+              distance = clampDistance(distance * pinchScale);
             }
             panTarget(gesture.midX - gestureMidX, gesture.midY - gestureMidY);
             gestureDistance = gesture.distance;
             gestureMidX = gesture.midX;
             gestureMidY = gesture.midY;
-            updateCamera();
             return;
           }
 
@@ -379,10 +486,11 @@ export function GraveyardSplatViewer() {
             return;
           }
 
-          distance = clampDistance(
-            distance * (1 + event.deltaY * WHEEL_ZOOM_SPEED),
+          const clampedWheelDelta = Math.max(
+            -MAX_WHEEL_ZOOM_DELTA,
+            Math.min(MAX_WHEEL_ZOOM_DELTA, event.deltaY),
           );
-          updateCamera();
+          zoomCamera(Math.exp(clampedWheelDelta * WHEEL_ZOOM_SPEED));
         };
 
         const movementKeys = new Set([
@@ -412,6 +520,7 @@ export function GraveyardSplatViewer() {
 
         const onBlur = () => {
           pressedKeys.clear();
+          clearPointerGesture();
         };
 
         canvas.addEventListener(
@@ -426,6 +535,11 @@ export function GraveyardSplatViewer() {
         );
         canvas.addEventListener("pointerup", endPointer, listenerOptions);
         canvas.addEventListener("pointercancel", endPointer, listenerOptions);
+        canvas.addEventListener(
+          "lostpointercapture",
+          clearPointerGesture,
+          listenerOptions,
+        );
         canvas.addEventListener(
           "contextmenu",
           (event) => event.preventDefault(),
@@ -496,7 +610,10 @@ export function GraveyardSplatViewer() {
 
         app.on("update", onUpdate);
         applyAuthoredCamera();
-        resetCameraRef.current = applyAuthoredCamera;
+        cameraControlsRef.current = {
+          reset: applyAuthoredCamera,
+          zoom: zoomCamera,
+        };
 
         resizeObserver = new ResizeObserver(() => {
           if (!app) {
@@ -511,7 +628,7 @@ export function GraveyardSplatViewer() {
 
         const splatAsset = new Asset("Graveyard V2", "gsplat", {
           url: SPLAT_URL,
-          filename: "meta.json",
+          filename: "lod-meta.json",
         });
 
         splatAsset.on("load", () => {
@@ -521,7 +638,13 @@ export function GraveyardSplatViewer() {
 
           const splat = new Entity("Tsintskaro graveyard");
           splat.setLocalEulerAngles(0, 0, 180);
-          splat.addComponent("gsplat", { asset: splatAsset });
+          splat.addComponent("gsplat", {
+            asset: splatAsset,
+            lodBaseDistance: LOD_BASE_DISTANCE,
+            lodMultiplier: LOD_MULTIPLIER,
+            lodRangeMin: INITIAL_STREAMING_LOD,
+          });
+          splatEntity = splat;
           app.root.addChild(splat);
 
           const resource = splatAsset.resource as {
@@ -572,7 +695,8 @@ export function GraveyardSplatViewer() {
 
     return () => {
       active = false;
-      resetCameraRef.current = null;
+      cameraControlsRef.current = null;
+      delete frame.dataset.cameraDistance;
       listenerController.abort();
       resizeObserver?.disconnect();
       if (app) {
@@ -583,18 +707,47 @@ export function GraveyardSplatViewer() {
     };
   }, []);
 
-  const enterFullscreen = async () => {
+  const toggleFullscreen = async () => {
+    const frame = frameRef.current;
+
+    if (!frame) {
+      return;
+    }
+
+    if (isViewportFullscreen) {
+      setIsViewportFullscreen(false);
+      return;
+    }
+
+    if (document.fullscreenElement === frame) {
+      await document.exitFullscreen();
+      return;
+    }
+
+    const useViewportFallback =
+      window.matchMedia("(max-width: 639px)").matches ||
+      typeof frame.requestFullscreen !== "function";
+
+    if (useViewportFallback) {
+      setIsViewportFullscreen(true);
+      return;
+    }
+
     try {
-      await frameRef.current?.requestFullscreen();
+      await frame.requestFullscreen();
     } catch {
-      // The browser can decline fullscreen without affecting the viewer.
+      setIsViewportFullscreen(true);
     }
   };
 
   return (
     <div
       ref={frameRef}
-      className="relative h-[430px] w-full overflow-hidden bg-[#070809] sm:h-[520px] lg:h-[620px] [&:fullscreen]:h-screen"
+      className={
+        isViewportFullscreen
+          ? "fixed inset-0 z-[100] h-[100dvh] w-screen overflow-hidden overscroll-contain bg-[#070809]"
+          : "relative h-[430px] w-full overflow-hidden bg-[#070809] sm:h-[520px] lg:h-[620px] [&:fullscreen]:h-screen [&:fullscreen]:w-screen"
+      }
     >
       <canvas
         ref={canvasRef}
@@ -658,7 +811,7 @@ export function GraveyardSplatViewer() {
               type="button"
               size="icon"
               variant="secondary"
-              onClick={() => resetCameraRef.current?.()}
+              onClick={() => cameraControlsRef.current?.reset()}
               aria-label="Вернуть исходный вид"
               title="Исходный вид"
               className="border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur hover:bg-black/75"
@@ -669,12 +822,47 @@ export function GraveyardSplatViewer() {
               type="button"
               size="icon"
               variant="secondary"
-              onClick={enterFullscreen}
-              aria-label="Открыть 3D-модель на весь экран"
-              title="На весь экран"
+              onClick={() =>
+                cameraControlsRef.current?.zoom(1 / ZOOM_BUTTON_SCALE)
+              }
+              aria-label="Отдалить модель"
+              title="Отдалить"
+              className="border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur hover:bg-black/75 sm:hidden"
+            >
+              <ZoomOut className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              onClick={() => cameraControlsRef.current?.zoom(ZOOM_BUTTON_SCALE)}
+              aria-label="Приблизить модель"
+              title="Приблизить"
+              className="border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur hover:bg-black/75 sm:hidden"
+            >
+              <ZoomIn className="size-4" />
+            </Button>
+            <Button
+              type="button"
+              size="icon"
+              variant="secondary"
+              onClick={toggleFullscreen}
+              aria-label={
+                isFullscreen
+                  ? "Закрыть полноэкранный режим"
+                  : "Открыть 3D-модель на весь экран"
+              }
+              aria-pressed={isFullscreen}
+              title={
+                isFullscreen ? "Выйти из полноэкранного режима" : "На весь экран"
+              }
               className="border border-white/15 bg-black/55 text-white shadow-lg backdrop-blur hover:bg-black/75"
             >
-              <Expand className="size-4" />
+              {isFullscreen ? (
+                <Shrink className="size-4" />
+              ) : (
+                <Expand className="size-4" />
+              )}
             </Button>
           </div>
 

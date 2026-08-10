@@ -95,7 +95,7 @@ export function GraveyardSplatSection() {
                 Открыть 3D-модель
               </Button>
               <p className="mt-3 text-xs text-white/45">
-                Загрузка около 82 МБ начнется только после нажатия
+                Модель загружается частями по мере просмотра — только после нажатия
               </p>
             </div>
           </div>

@@ -8,7 +8,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       {
-        source: "/models/tsintskaro-graveyard/:path*",
+        source: "/models/tsintskaro-graveyard-streamed/:path*",
         headers: [
           {
             key: "Cache-Control",
