@@ -1,0 +1,116 @@
+[
+  {
+    "id": "origins",
+    "period": "До XIX века",
+    "title": "Истоки. От Понта к Пасинлеру",
+    "paragraphIds": ["p1-01", "p1-02", "p1-03", "p1-04", "p1-05"]
+  },
+  {
+    "id": "settlement",
+    "period": "1813–1814",
+    "title": "Переселение в Цинцкаро",
+    "paragraphIds": ["p1-06", "p1-07", "p1-08"]
+  },
+  {
+    "id": "first-families",
+    "period": "1813–1815",
+    "title": "Первые семьи: документы и предания",
+    "paragraphIds": ["p4-01", "p4-02", "p4-03"]
+  },
+  {
+    "id": "petition",
+    "period": "1822",
+    "title": "Прошение девятнадцати семей",
+    "paragraphIds": ["p3-01", "p3-02"]
+  },
+  {
+    "id": "beshtasheni",
+    "period": "1829–1830",
+    "title": "Зима, которую разделили с переселенцами",
+    "paragraphIds": ["p2-01", "p2-02", "p2-03"]
+  },
+  {
+    "id": "new-village",
+    "period": "1835",
+    "title": "Ещё одно Цинцкаро",
+    "paragraphIds": ["p1-14"]
+  },
+  {
+    "id": "village-life",
+    "period": "XIX век",
+    "title": "Земля, ремёсла и родники",
+    "paragraphIds": ["p1-12", "p1-13", "p1-16"]
+  },
+  {
+    "id": "sakalidze",
+    "period": "Середина XIX века",
+    "title": "Тамаз и история семьи Сакалидзе",
+    "note": "Семейное предание · точная дата неизвестна",
+    "paragraphIds": [
+      "p4-08",
+      "p4-09",
+      "p4-10",
+      "p4-11",
+      "p4-12",
+      "p4-13",
+      "p4-14",
+      "p4-15"
+    ]
+  },
+  {
+    "id": "craftsmen",
+    "period": "1858",
+    "title": "Мастера на пути домой",
+    "paragraphIds": ["p3-05"]
+  },
+  {
+    "id": "tbilisi",
+    "period": "Вторая половина XIX века",
+    "title": "Дорога в Тбилиси",
+    "paragraphIds": ["p4-04", "p4-05", "p4-06", "p4-07"]
+  },
+  {
+    "id": "population",
+    "period": "1863–1886",
+    "title": "Семьи и население села",
+    "paragraphIds": ["p2-05", "p2-06", "p2-07"]
+  },
+  {
+    "id": "school",
+    "period": "1887",
+    "title": "Церковь и первая школа",
+    "paragraphIds": ["p1-15", "p2-08", "p2-09", "p2-10"]
+  },
+  {
+    "id": "everyday-life",
+    "period": "Конец XIX века",
+    "title": "Повседневная жизнь сельчан",
+    "paragraphIds": [
+      "p3-03",
+      "p3-04",
+      "p3-06",
+      "p3-07",
+      "p3-08",
+      "p3-09",
+      "p2-04"
+    ]
+  },
+  {
+    "id": "sevastianov",
+    "period": "1923–1970-е",
+    "title": "Память о священнике",
+    "paragraphIds": ["p2-11", "p2-12"]
+  },
+  {
+    "id": "pasinler",
+    "period": "2025",
+    "title": "Возвращение в Пасинлер",
+    "paragraphIds": ["p1-09", "p1-10"]
+  },
+  {
+    "id": "memory",
+    "period": "Сегодня",
+    "title": "Память, которая остаётся с нами",
+    "paragraphIds": ["p1-11", "p1-17", "p1-18", "p1-19", "p1-20", "p1-21"]
+  }
+]

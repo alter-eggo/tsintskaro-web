@@ -1,81 +1,80 @@
-import { historyData } from "@/lib/mock-history-data";
+import type { Metadata } from "next";
+import { ArrowDown, ArrowUp, ArrowUpRight, Download } from "lucide-react";
+import Link from "next/link";
 import TimelineSection from "@/components/history/TimelineSection";
-import PopulationChart from "@/components/history/PopulationChart";
-import DiasporaMap from "@/components/history/DiasporaMap";
-import TraditionsSection from "@/components/history/TraditionsSection";
-import HistoricalGallery from "@/components/history/HistoricalGallery";
-import KeyFigures from "@/components/history/KeyFigures";
-import EtymologySection from "@/components/history/EtymologySection";
-import SourcesSection from "@/components/history/SourcesSection";
+import { historyTimeline } from "@/lib/data/history";
+import styles from "@/components/history/history.module.css";
+
+export const metadata: Metadata = {
+  title: "История Цинцкаро",
+  description:
+    "История села Цинцкаро: переселение в Цинцкаро, жизнь села, церковь, школа и семейные истории.",
+};
+
+const milestones = [
+  ["origins", "Истоки"],
+  ["settlement", "1813–1814"],
+  ["petition", "1822"],
+  ["beshtasheni", "1829–1830"],
+  ["sakalidze", "Семьи"],
+  ["school", "1887"],
+  ["pasinler", "2025"],
+] as const;
 
 export default function HistoryPage() {
   return (
-    <div className="container py-6 md:py-12 px-4 md:px-6">
-      <div className="max-w-4xl mx-auto space-y-12 md:space-y-16">
-        {/* Hero */}
-        <div className="text-center space-y-3 md:space-y-4">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold">
-            {historyData.hero.title}
-          </h1>
-          <p className="text-lg md:text-xl text-primary font-medium">
-            {historyData.hero.subtitle}
-          </p>
-          <p className="text-base md:text-lg text-muted-foreground max-w-3xl mx-auto px-4 md:px-0">
-            {historyData.hero.description}
-          </p>
+    <div id="history-top" lang="ru" className={styles.page}>
+      <header className={styles.hero}>
+        <h1>История Цинцкаро</h1>
+      </header>
+      <nav aria-label="Ключевые даты истории" className={styles.milestones}>
+        {milestones.map(([id, label]) => (
+          <a key={id} href={`#${id}`}>
+            {label}
+          </a>
+        ))}
+        <a href="#history-chapter-links">
+          Все главы <ArrowDown size={14} aria-hidden="true" />
+        </a>
+      </nav>
+      <details id="history-contents" className={styles.contents}>
+        <summary>
+          Оглавление <span>{historyTimeline.length} глав</span>
+        </summary>
+        <nav id="history-chapter-links" aria-label="Все главы истории">
+          <ol>
+            {historyTimeline.map((chapter) => (
+              <li key={chapter.id}>
+                <a href={`#${chapter.id}`}>
+                  <span>{chapter.period}</span>
+                  {chapter.title}
+                </a>
+              </li>
+            ))}
+          </ol>
+        </nav>
+      </details>
+      <article aria-label="История села Цинцкаро">
+        <TimelineSection timeline={historyTimeline} />
+      </article>
+      <footer className={styles.footer}>
+        <div className={styles.footerLinks}>
+          <Link href="/history/original" className={styles.textLink}>
+            Читать сплошным текстом{" "}
+            <ArrowUpRight size={16} aria-hidden="true" />
+          </Link>
+          <a
+            href="/history/tsintskaro-history.txt"
+            download
+            className={styles.textLink}
+          >
+            Скачать текст <Download size={16} aria-hidden="true" />
+          </a>
+          <a href="#history-top" className={styles.textLink}>
+            Наверх <ArrowUp size={16} aria-hidden="true" />
+          </a>
         </div>
-
-        {/* Etymology */}
-        <EtymologySection
-          official={historyData.alternativeNames.official}
-          pontic={historyData.alternativeNames.pontic}
-          etymology={historyData.alternativeNames.etymology}
-        />
-
-        {/* Timeline */}
-        <TimelineSection timeline={historyData.timeline} />
-
-        {/* Population Chart */}
-        <PopulationChart
-          title={historyData.population.title}
-          description={historyData.population.description}
-          data={historyData.population.data}
-        />
-
-        {/* Diaspora Map */}
-        <DiasporaMap
-          title={historyData.locations.title}
-          description={historyData.locations.description}
-          data={historyData.locations.data}
-        />
-
-        {/* Cultural Heritage */}
-        <TraditionsSection
-          title={historyData.traditions.title}
-          description={historyData.traditions.description}
-          items={historyData.traditions.items}
-        />
-
-        {/* Key Figures */}
-        <KeyFigures
-          title={historyData.keyFigures.title}
-          description={historyData.keyFigures.description}
-          people={historyData.keyFigures.people}
-        />
-
-        {/* Historical Gallery */}
-        <HistoricalGallery
-          title={historyData.gallery.title}
-          images={historyData.gallery.images}
-        />
-
-        {/* Sources */}
-        <SourcesSection
-          title={historyData.sources.title}
-          description={historyData.sources.description}
-          items={historyData.sources.items}
-        />
-      </div>
+      </footer>
     </div>
   );
 }
