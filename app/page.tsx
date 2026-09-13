@@ -1,99 +1,74 @@
-"use client";
-
 import {
   Calendar,
   Users,
   Eye,
   Image as ImageIcon,
   ArrowRight,
-  ChevronLeft,
-  ChevronRight,
-  Award,
-  Info,
-  AlertTriangle,
-  AlertCircle,
+  Languages,
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import Image from "next/image";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { historyPeople } from "@/lib/data/history-people";
+import { meryemAnaNews } from "@/lib/data/news";
+import styles from "./home.module.css";
 
 export default function Home() {
-  const [currentAnnouncement, setCurrentAnnouncement] = useState(0);
-
-  // Mock data for announcements
-  const announcements = [
-    {
-      id: 1,
-      priority: "urgent",
-      title: "Встреча земляков в Москве",
-      content:
-        "Ежемесячная встреча земляков из Цинцкаро 20 декабря в 18:00. Адрес: ул. Арбат, 15.",
-      icon: AlertTriangle,
-      color: "red",
-    },
-    {
-      id: 2,
-      priority: "important",
-      title: "Обновление семейного архива",
-      content:
-        "Добавлены новые записи в базу данных семей. Проверьте информацию о ваших родственниках.",
-      icon: AlertCircle,
-      color: "orange",
-    },
-    {
-      id: 3,
-      priority: "normal",
-      title: "Новые исторические материалы",
-      content:
-        "Опубликованы архивные фотографии и документы из истории Цинцкаро 1950-60х годов.",
-      icon: Info,
-      color: "blue",
-    },
-  ];
-
-  // Auto-play carousel
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentAnnouncement((prev) => (prev + 1) % announcements.length);
-    }, 5000);
-    return () => clearInterval(interval);
-  }, [announcements.length]);
-
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-br from-blue-50 to-white py-16 lg:py-24">
-        <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
-          <div className="text-center">
-            <h1 className="text-3xl lg:text-5xl font-bold text-gray-900 mb-4">
+      <section className={styles.hero} aria-labelledby="home-title">
+        <figure className={styles.heroVisual}>
+          <Image
+            src="/images/tsintskaro-road-sign.jpg"
+            alt="Въездной знак Цинцкаро с надписями на грузинском и латиницей на фоне дороги, полей и гор."
+            fill
+            sizes="(min-width: 1056px) 56vw, 100vw"
+            preload
+            className={styles.heroImage}
+          />
+        </figure>
+        <div className={styles.heroContent}>
+          <div className={styles.heroCopy}>
+            <h2 id="home-title" className={styles.heroTitle}>
               Цинцкаро
-            </h1>
-            <p className="text-lg lg:text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            </h2>
+            <p className={styles.heroDescription}>
               Информационный сайт для греков из села Цинцкаро. История, семьи,
               традиции и связь с родиной.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Link
-                href="/history"
-                className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
+            <div className={styles.heroActions}>
+              <Button asChild className={styles.primaryAction}>
+                <Link href="/language">
+                  <Languages className="size-5" aria-hidden="true" />
+                  Язык Цинцкаро
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className={styles.secondaryAction}
               >
-                История села
-              </Link>
-              <Link
-                href="/families"
-                className="border border-blue-600 text-blue-600 px-6 py-3 rounded-lg hover:bg-blue-50 transition-colors"
+                <Link href="/history">История села</Link>
+              </Button>
+              <Button
+                asChild
+                variant="outline"
+                className={styles.secondaryAction}
               >
-                Семейный справочник
-              </Link>
+                <Link href="/families">Семейный справочник</Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
       {/* Latest News Section */}
-      <section className="py-12 lg:py-16">
+      <section id="news" aria-labelledby="news-heading" className="py-12 lg:py-16">
         <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
           <div className="mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+            <h2 id="news-heading" className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
               Новости и события
             </h2>
             <p className="text-gray-600">
@@ -101,136 +76,63 @@ export default function Home() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((item) => (
-              <article
-                key={item}
-                className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-all duration-200 hover:-translate-y-1"
-              >
-                <div className="aspect-video bg-gradient-to-br from-blue-100 to-blue-200 rounded-t-lg"></div>
-                <div className="p-6">
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
-                    <Calendar className="h-4 w-4" />
-                    <span>15 декабря 2024</span>
-                  </div>
-                  <h3 className="font-bold text-lg mb-3 line-clamp-2">
-                    {item === 1 && "Обновление базы данных семей"}
-                    {item === 2 && "Новые материалы по истории села"}
-                    {item === 3 && "Встреча земляков в Москве"}
-                  </h3>
-                  <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-                    {item === 1 &&
-                      "Добавлены новые записи в семейный справочник. Проверьте информацию о ваших родственниках."}
-                    {item === 2 &&
-                      "Опубликованы архивные фотографии и документы из истории Цинцкаро 1950-60х годов."}
-                    {item === 3 &&
-                      "Ежемесячная встреча земляков из Цинцкаро в культурном центре. Обсуждение вопросов сохранения традиций."}
-                  </p>
-                  <Link href="#" className="text-blue-600 hover:underline">
-                    Читать далее →
-                  </Link>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Announcements Carousel */}
-      <section className="py-12 lg:py-16 bg-gray-50">
-        <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
-              Важные объявления
-            </h2>
-            <p className="text-gray-600">Информация для земляков из Цинцкаро</p>
-          </div>
-
-          <div className="relative">
-            <div className="overflow-hidden">
-              <div
-                className="flex transition-transform duration-500 ease-in-out"
-                style={{
-                  transform: `translateX(-${currentAnnouncement * 100}%)`,
-                }}
-              >
-                {announcements.map((announcement) => (
-                  <div
-                    key={announcement.id}
-                    className="w-full flex-shrink-0 px-4"
-                  >
-                    <div className="bg-white rounded-lg shadow-sm border p-6 max-w-md mx-auto">
-                      <div className="flex items-start gap-4">
-                        <div
-                          className={`p-3 rounded-full bg-${announcement.color}-100`}
-                        >
-                          <announcement.icon
-                            className={`h-6 w-6 text-${announcement.color}-600`}
-                          />
-                        </div>
-                        <div className="flex-1">
-                          <div
-                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold mb-3 bg-${announcement.color}-100 text-${announcement.color}-800`}
-                          >
-                            {announcement.priority === "urgent" && "Срочно"}
-                            {announcement.priority === "important" && "Важно"}
-                            {announcement.priority === "normal" && "Объявление"}
-                          </div>
-                          <h3 className="font-bold text-lg mb-3">
-                            {announcement.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm">
-                            {announcement.content}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <button
-              onClick={() =>
-                setCurrentAnnouncement((prev) =>
-                  prev === 0 ? announcements.length - 1 : prev - 1
-                )
-              }
-              className="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow"
+          <article className="overflow-hidden rounded-xl border bg-white shadow-sm md:grid md:grid-cols-2">
+            <Link
+              href={meryemAnaNews.href}
+              aria-label={meryemAnaNews.title}
+              className="relative block min-h-0 focus-visible:outline-2 focus-visible:outline-offset-[-4px] focus-visible:outline-blue-600"
             >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() =>
-                setCurrentAnnouncement(
-                  (prev) => (prev + 1) % announcements.length
-                )
-              }
-              className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 p-2 bg-white rounded-full shadow-md hover:shadow-lg transition-shadow"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-
-          <div className="flex justify-center mt-6 gap-2">
-            {announcements.map((_, index) => (
-              <button
-                key={index}
-                onClick={() => setCurrentAnnouncement(index)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentAnnouncement ? "bg-blue-600" : "bg-gray-300"
-                }`}
+              <Image
+                src={meryemAnaNews.photos[0].src}
+                alt={meryemAnaNews.photos[0].alt}
+                width={meryemAnaNews.photos[0].width}
+                height={meryemAnaNews.photos[0].height}
+                sizes="(max-width: 768px) 100vw, 544px"
+                className="h-full w-full object-cover"
               />
-            ))}
-          </div>
+            </Link>
+            <div className="flex flex-col justify-center p-6 lg:p-8">
+              <div className="mb-3 flex items-center gap-2 text-sm text-gray-600">
+                <Calendar className="size-4" aria-hidden="true" />
+                <time dateTime={meryemAnaNews.eventDate}>
+                  {meryemAnaNews.eventDateLabel}
+                </time>
+              </div>
+              <h3 className="mb-3 text-xl font-bold leading-snug text-gray-900 lg:text-2xl">
+                <Link href={meryemAnaNews.href} className="hover:text-blue-700 hover:underline">
+                  {meryemAnaNews.title}
+                </Link>
+              </h3>
+              <p className="mb-5 leading-relaxed text-gray-600">
+                {meryemAnaNews.excerpt}
+              </p>
+              <p className="mb-5 text-sm text-gray-500">
+                По материалам {meryemAnaNews.source.name} · {meryemAnaNews.photos.length} фото
+              </p>
+              <Link
+                href={meryemAnaNews.href}
+                className="inline-flex min-h-11 items-center gap-2 self-start font-medium text-blue-700 hover:underline focus-visible:outline-2 focus-visible:outline-offset-4"
+              >
+                Читать далее
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </Link>
+            </div>
+          </article>
         </div>
       </section>
 
       {/* Honor Board Section */}
-      <section className="py-12 lg:py-16 bg-gradient-to-br from-blue-50 to-gray-50">
+      <section
+        id="notable-people"
+        aria-labelledby="notable-people-title"
+        className="py-12 lg:py-16 bg-gradient-to-br from-blue-50 to-gray-50"
+      >
         <div className="container mx-auto px-4 lg:px-8 max-w-6xl">
           <div className="text-center mb-12">
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
+            <h2
+              id="notable-people-title"
+              className="text-2xl lg:text-3xl font-bold text-gray-900 mb-2"
+            >
               Известные земляки
             </h2>
             <p className="text-gray-600">
@@ -239,45 +141,27 @@ export default function Home() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              {
-                name: "Иван Петров",
-                achievement:
-                  "Организатор встреч земляков, собиратель семейных историй",
-              },
-              {
-                name: "Мария Сидорова",
-                achievement: "Создатель архива фотографий и документов села",
-              },
-              {
-                name: "Александр Козлов",
-                achievement: "Исследователь истории греков в России",
-              },
-              {
-                name: "Елена Николаева",
-                achievement: "Координатор связи с исторической родиной",
-              },
-            ].map((person, index) => (
-              <div
-                key={index}
-                className="text-center bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1"
+            {historyPeople.map((person) => (
+              <Link
+                key={person.slug}
+                href={`/history/people/${person.slug}`}
+                className="group text-center bg-white rounded-lg p-6 shadow-sm hover:shadow-md transition-all duration-200 hover:-translate-y-1 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-blue-600"
               >
-                <div className="relative mb-4">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-100 to-blue-200 rounded-full mx-auto flex items-center justify-center">
-                    <span className="text-2xl font-bold text-blue-600">
-                      {person.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </span>
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-blue-600 rounded-full border-2 border-white"></div>
-                </div>
-                <h3 className="font-bold text-lg mb-2">{person.name}</h3>
-                <p className="text-sm text-gray-600 text-center">
-                  {person.achievement}
+                <Image
+                  {...person.portrait}
+                  alt=""
+                  sizes="96px"
+                  className="w-24 h-24 rounded-full object-cover object-top mx-auto mb-4"
+                />
+                <h3 className="font-bold text-lg">{person.name}</h3>
+                <p className="text-sm text-gray-600 mt-1 mb-3">
+                  {person.fullName}
                 </p>
-              </div>
+                <p className="text-sm text-gray-600">{person.description}</p>
+                <span className="inline-flex items-center gap-2 min-h-11 mt-3 text-sm text-blue-600 group-hover:underline underline-offset-4">
+                  Читать историю <ArrowRight size={16} aria-hidden="true" />
+                </span>
+              </Link>
             ))}
           </div>
         </div>
@@ -532,7 +416,10 @@ export default function Home() {
           </div>
 
           <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
-            <p>&copy; 2025 Информационный сайт Цинцкаро. Все права защищены.</p>
+            <p>
+              &copy; <span suppressHydrationWarning>{new Date().getFullYear()}</span>{" "}
+              Информационный сайт Цинцкаро. Все права защищены.
+            </p>
           </div>
         </div>
       </footer>

@@ -17,16 +17,14 @@ const milestones = [
   ["petition", "1822"],
   ["beshtasheni", "1829–1830"],
   ["sakalidze", "Семьи"],
-  ["school", "1887"],
+  ["school", "Церковь и школа"],
+  ["pontus", "1914–1923"],
   ["pasinler", "2025"],
 ] as const;
 
 export default function HistoryPage() {
   return (
     <div id="history-top" lang="ru" className={styles.page}>
-      <header className={styles.hero}>
-        <h1>История Цинцкаро</h1>
-      </header>
       <nav aria-label="Ключевые даты истории" className={styles.milestones}>
         {milestones.map(([id, label]) => (
           <a key={id} href={`#${id}`}>

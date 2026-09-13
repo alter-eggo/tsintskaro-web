@@ -3,10 +3,10 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
 import { AppSidebar } from "@/components/app-sidebar";
+import { AppHeader } from "@/components/app-header";
 import {
   SidebarInset,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 
 const geistSans = Geist({
@@ -37,12 +37,7 @@ export default function RootLayout({
         <SidebarProvider>
           <AppSidebar />
           <SidebarInset className="min-w-0">
-            <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b px-4">
-              <div className="flex items-center gap-2">
-                <h1 className="text-lg font-semibold">Цинцкаро</h1>
-              </div>
-              <SidebarTrigger className="size-10" />
-            </header>
+            <AppHeader />
             <div className="flex flex-1 flex-col gap-4 p-4">{children}</div>
           </SidebarInset>
         </SidebarProvider>

@@ -21,20 +21,39 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   SidebarRail,
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
-// Menu items from Header component example.
-const navigation = [
+const navigation: {
+  name: string;
+  href: string;
+  icon: typeof House;
+  children?: { name: string; href: string }[];
+}[] = [
   { name: "Главная", href: "/", icon: House },
-  { name: "История", href: "/history", icon: History },
+  {
+    name: "История",
+    href: "/history",
+    icon: History,
+    children: [{ name: "Люди и судьбы", href: "/history/people" }],
+  },
   { name: "Культура и досуг", href: "/gallery", icon: Image },
   { name: "Общество", href: "/about", icon: Users2 },
   { name: "Обычаи и традиции", href: "/traditions", icon: BookOpen },
   { name: "Фамилии", href: "/families", icon: Users },
-  { name: "Язык", href: "/language", icon: Languages },
+  {
+    name: "Язык",
+    href: "/language",
+    icon: Languages,
+    children: [
+      { name: "Материалы для изучения", href: "/language/materials" },
+    ],
+  },
 ];
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
@@ -51,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     if (href === "/") {
       return pathname === href;
     }
-    return pathname.startsWith(href);
+    return pathname === href || pathname.startsWith(`${href}/`);
   };
 
   return (
@@ -81,23 +100,62 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigation.map((item) => (
-                <SidebarMenuItem key={item.name}>
-                  <SidebarMenuButton
-                    asChild
-                    className={`transition-colors ${
-                      isActive(item.href)
-                        ? "text-primary bg-primary/10"
-                        : "text-foreground/60 hover:text-foreground hover:bg-accent"
-                    }`}
-                  >
-                    <Link href={item.href} onClick={handleNavClick}>
-                      <item.icon className="h-4 w-4" />
-                      <span className="font-medium">{item.name}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navigation.map((item) => {
+                const active =
+                  isActive(item.href) &&
+                  !item.children?.some((child) => isActive(child.href));
+
+                return (
+                  <SidebarMenuItem key={item.name}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      tooltip={item.name}
+                      className={`transition-colors ${
+                        active
+                          ? "text-primary bg-primary/10"
+                          : "text-foreground/60 hover:text-foreground hover:bg-accent"
+                      }`}
+                    >
+                      <Link
+                        href={item.href}
+                        onClick={handleNavClick}
+                        aria-current={active ? "page" : undefined}
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span className="font-medium">{item.name}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                    {item.children ? (
+                      <SidebarMenuSub>
+                        {item.children.map((child) => (
+                          <SidebarMenuSubItem key={child.href}>
+                            <SidebarMenuSubButton
+                              asChild
+                              isActive={isActive(child.href)}
+                              className="h-auto min-h-9 py-2 [&>span:last-child]:whitespace-normal"
+                            >
+                              <Link
+                                href={child.href}
+                                onClick={handleNavClick}
+                                aria-current={
+                                  isActive(child.href)
+                                    ? pathname === child.href
+                                      ? "page"
+                                      : "location"
+                                    : undefined
+                                }
+                              >
+                                <span>{child.name}</span>
+                              </Link>
+                            </SidebarMenuSubButton>
+                          </SidebarMenuSubItem>
+                        ))}
+                      </SidebarMenuSub>
+                    ) : null}
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

@@ -13,7 +13,6 @@ export default function GamesPage() {
   return (
     <div className="flex flex-col gap-6">
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Игры</h2>
         <p className="text-muted-foreground">
           Интерактивные игры и развлечения для всех возрастов
         </p>

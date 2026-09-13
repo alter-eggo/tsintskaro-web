@@ -201,7 +201,6 @@ export default function PopulationPage() {
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Население</h2>
           <p className="text-muted-foreground">
             Реестр жителей Цинцкаро с подробной информацией
           </p>

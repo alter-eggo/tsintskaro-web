@@ -128,16 +128,9 @@ export function LanguageResources({ videoUrl }: { videoUrl?: string }) {
   const videoSource = getVideoSource(videoUrl);
 
   return (
-    <section className="space-y-4" aria-labelledby="language-resources-title">
+    <section className="space-y-4" aria-labelledby="page-title">
       <div>
-        <h3
-          id="language-resources-title"
-          className="flex items-center gap-2 text-xl font-semibold"
-        >
-          <BookOpenText className="h-5 w-5" />
-          Материалы для изучения
-        </h3>
-        <p className="mt-1 text-sm text-muted-foreground">
+        <p className="text-sm text-muted-foreground">
           Алфавит, чтение и видеоматериалы на цинцкарском языке
         </p>
       </div>

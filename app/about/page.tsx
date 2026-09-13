@@ -11,7 +11,6 @@ export default function AboutPage() {
       <div className="max-w-6xl mx-auto space-y-20">
         {/* Hero */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl md:text-5xl font-bold">Об Обществе</h1>
           <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
             Общество цинцкаройских греков «Цинцкаро» — общественная организация,
             объединяющая представителей греческой диаспоры из села Цинцкаро

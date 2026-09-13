@@ -82,7 +82,6 @@ export default function LeisurePage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Досуг</h2>
           <p className="text-muted-foreground">
             Семейные дела, культурно-развлекательные мероприятия, отдых и
             путешествия, спорт

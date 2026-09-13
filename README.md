@@ -37,6 +37,6 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## Language materials
 
-The alphabet and bilingual story PDFs are stored in `public/materials` and are shown on the Language page.
+The alphabet and bilingual story PDFs are stored in `public/materials` and are shown in the “Материалы для изучения” subsection at `/language/materials`, accessible from the Language page and sidebar.
 
 The story video is intentionally kept outside the repository. Upload it to YouTube (an unlisted video is supported), Vimeo, or a video CDN, then set `STORY_VIDEO_URL` in `.env.local` and in the deployment environment. Full YouTube and Vimeo links are converted into embedded players automatically. Direct `.mp4`, `.webm`, and `.ogg` links use the browser video player with loading disabled until the visitor presses play.

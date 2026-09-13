@@ -17,7 +17,6 @@ export default function OriginalHistoryPage() {
         <ArrowLeft size={16} aria-hidden="true" /> К ленте дат
       </Link>
       <header className={styles.originalHeader}>
-        <h1>История Цинцкаро</h1>
         <a
           href="/history/tsintskaro-history.txt"
           download

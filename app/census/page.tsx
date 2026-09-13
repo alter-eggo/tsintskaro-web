@@ -87,7 +87,6 @@ export default function CensusPage() {
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:justify-between sm:items-start">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">Данные переписи</h2>
           <p className="text-muted-foreground">
             Статистические данные и аналитика переписи населения Цинцкаро
           </p>

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { GraduationCap } from "lucide-react";
 import {
   educationCourses,
   learningPaths,
@@ -151,10 +150,6 @@ export default function EducationPage() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-          <GraduationCap className="h-6 w-6" />
-          Образование
-        </h2>
         <p className="text-muted-foreground">
           Изучайте культурное наследие Цинцкаро через интерактивные курсы и
           программы

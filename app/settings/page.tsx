@@ -121,9 +121,6 @@ export default function SettingsPage() {
     <div className="flex flex-col gap-6">
       <div className="flex justify-between items-start">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight">
-            Настройки системы
-          </h2>
           <p className="text-muted-foreground">
             Управление конфигурацией системы переписи населения
           </p>

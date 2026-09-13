@@ -39,7 +39,6 @@ export default function FamiliesPage() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Фамилии</h2>
         <p className="text-muted-foreground">
           Исследуйте генеалогическое древо и семейные связи цинцкаройских греков
         </p>

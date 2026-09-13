@@ -1,0 +1,120 @@
+.hero {
+  --hero-background: #102c3c;
+  --hero-foreground: #ffffff;
+  --hero-muted: #e2eaf0;
+  --hero-accent: #2563eb;
+  --hero-accent-hover: #1d4ed8;
+  position: relative;
+  isolation: isolate;
+  container-type: inline-size;
+  overflow: hidden;
+  border-radius: 1rem;
+  color: var(--hero-foreground);
+  background: var(--hero-background);
+}
+
+.heroVisual {
+  position: relative;
+  margin: 0;
+  aspect-ratio: 4 / 3;
+}
+
+.heroImage {
+  object-fit: cover;
+  object-position: center;
+}
+
+.heroContent {
+  position: relative;
+  padding: 2rem 1.5rem 2.5rem;
+}
+
+.heroCopy {
+  max-width: 30rem;
+}
+
+.heroTitle {
+  margin-bottom: 1rem;
+  font-size: clamp(2.5rem, 7cqi, 4.5rem);
+  font-weight: 700;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+}
+
+.heroDescription {
+  margin-bottom: 2rem;
+  color: var(--hero-muted);
+  font-size: 1.125rem;
+  line-height: 1.65;
+  text-wrap: pretty;
+}
+
+.heroActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.primaryAction,
+.secondaryAction {
+  height: auto;
+  min-height: 3rem;
+  padding: 0.75rem 1.125rem;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  white-space: normal;
+  text-align: center;
+}
+
+.primaryAction {
+  background: var(--hero-accent);
+  color: var(--hero-foreground);
+}
+
+.primaryAction:hover {
+  background: var(--hero-accent-hover);
+}
+
+.secondaryAction {
+  border-color: rgb(255 255 255 / 50%);
+  background: rgb(16 44 60 / 45%);
+  color: var(--hero-foreground);
+}
+
+.secondaryAction:hover {
+  background: rgb(255 255 255 / 15%);
+  color: var(--hero-foreground);
+}
+
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible {
+  outline: 2px solid var(--hero-foreground);
+  outline-offset: 4px;
+}
+
+@container (min-width: 48rem) {
+  .heroVisual {
+    position: absolute;
+    inset: 0 0 0 44%;
+    aspect-ratio: auto;
+  }
+
+  .heroContent {
+    display: flex;
+    align-items: center;
+    min-height: 35rem;
+    padding: 3rem 2rem;
+    pointer-events: none;
+  }
+
+  .heroCopy {
+    max-width: 39%;
+    pointer-events: auto;
+  }
+}
+
+@container (max-width: 25rem) {
+  .heroActions > a {
+    width: 100%;
+  }
+}

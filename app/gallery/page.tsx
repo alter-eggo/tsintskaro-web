@@ -62,7 +62,6 @@ export default function GalleryPage() {
     <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h2 className="text-2xl font-bold tracking-tight">Галерея</h2>
         <p className="text-muted-foreground">
           Коллекция фотографий и воспоминаний нашего сообщества
         </p>

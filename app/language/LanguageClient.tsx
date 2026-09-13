@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useMemo, useState, useTransition } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
+  BookOpenText,
   BookText,
   Hash,
   Languages,
@@ -12,7 +14,6 @@ import {
 } from "lucide-react";
 
 import { addDictionaryWord } from "@/app/language/actions";
-import { LanguageResources } from "@/components/language/LanguageResources";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -69,7 +70,6 @@ const PART_OF_SPEECH_OPTIONS = [
 
 type LanguageClientProps = {
   entries: DictionaryEntry[];
-  videoUrl?: string;
 };
 
 type FormStatus =
@@ -94,7 +94,7 @@ function matchesPartOfSpeech(
   return variants.includes(normalized);
 }
 
-export function LanguageClient({ entries, videoUrl }: LanguageClientProps) {
+export function LanguageClient({ entries }: LanguageClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [searchQuery, setSearchQuery] = useState("");
@@ -258,13 +258,19 @@ export function LanguageClient({ entries, videoUrl }: LanguageClientProps) {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <h2 className="text-2xl font-bold tracking-tight">Язык</h2>
-
-        <Button className="w-full sm:w-auto" onClick={handleAddWordClick}>
-          <Plus className="h-4 w-4" />
-          Добавить слово
-        </Button>
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-end">
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button asChild variant="outline">
+            <Link href="/language/materials">
+              <BookOpenText className="h-4 w-4" />
+              Материалы для изучения
+            </Link>
+          </Button>
+          <Button onClick={handleAddWordClick}>
+            <Plus className="h-4 w-4" />
+            Добавить слово
+          </Button>
+        </div>
 
         <Dialog
           open={isPasswordDialogOpen}
@@ -565,8 +571,6 @@ export function LanguageClient({ entries, videoUrl }: LanguageClientProps) {
           )}
         </CardContent>
       </Card>
-
-      <LanguageResources videoUrl={videoUrl} />
     </div>
   );
 }
