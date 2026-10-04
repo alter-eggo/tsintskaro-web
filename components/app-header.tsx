@@ -12,7 +12,7 @@ const pageTitles: Record<string, string> = {
   "/history/people/urus": "Урус",
   "/history/urus": "Урус",
   "/gallery": "Галерея",
-  "/about": "Об Обществе",
+  "/society": "Об Обществе",
   "/traditions": "Традиции",
   "/families": "Фамилии",
   "/language": "Язык",

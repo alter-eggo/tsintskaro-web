@@ -334,7 +334,7 @@ export default function Home() {
               <ul className="space-y-2 text-sm">
                 <li>
                   <Link
-                    href="/about"
+                    href="/society"
                     className="text-gray-400 hover:text-white transition-colors"
                   >
                     О нас

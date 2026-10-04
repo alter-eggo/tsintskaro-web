@@ -43,7 +43,7 @@ const navigation: {
     children: [{ name: "Люди и судьбы", href: "/history/people" }],
   },
   { name: "Культура и досуг", href: "/gallery", icon: Image },
-  { name: "Общество", href: "/about", icon: Users2 },
+  { name: "Общество", href: "/society", icon: Users2 },
   { name: "Обычаи и традиции", href: "/traditions", icon: BookOpen },
   { name: "Фамилии", href: "/families", icon: Users },
   {
