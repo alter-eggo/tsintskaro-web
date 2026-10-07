@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
+    "test:dictionary": "node scripts/check-dictionary.mjs",
     "test:graveyard-viewer": "node scripts/check-graveyard-viewer.mjs",
     "check:history": "node scripts/check-history.mjs"
   },

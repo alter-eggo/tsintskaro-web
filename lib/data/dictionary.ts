@@ -19,10 +19,10 @@ export interface DictionaryEntry {
  */
 export const TSINTSKARO_ALPHABET = [
   "А", "Â", "Б", "В", "Г", "Гх", "Д", "Дж",
-  "Е", "Ё", "Ж", "З", "И", "Û", "Й", "К",
+  "Е", "Ê", "Ё", "Ж", "З", "И", "Û", "Й", "К",
   "Л", "М", "Н", "О", "Ô", "П", "Р", "С",
   "Т", "У", "Ŷ", "Ф", "Х", "Хг", "Ц", "Ч",
-  "Ш", "Щ", "Ъ", "Ы", "Ь", "Э", "Ю", "Я",
+  "Ш", "Щ", "Ы", "Ь", "Э", "Ю", "Я",
 ] as const;
 
 /**
@@ -43,7 +43,7 @@ TSINTSKARO_ALPHABET.forEach((letter, index) => {
  */
 export function getWordLetter(word: string): string | null {
   if (!word) return null;
-  const upper = word.toUpperCase();
+  const upper = word.normalize("NFC").toUpperCase();
 
   // Check multi-character letters first
   for (const ml of MULTI_CHAR_LETTERS) {
@@ -53,11 +53,11 @@ export function getWordLetter(word: string): string | null {
   }
 
   // Fall back to single first character
-  return word[0].toUpperCase();
+  return upper[0];
 }
 
 function tokenizeWord(word: string): string[] {
-  const upper = word.toUpperCase();
+  const upper = word.normalize("NFC").toUpperCase();
   const tokens: string[] = [];
   let i = 0;
 
@@ -154,13 +154,17 @@ export function searchDictionary(
     caseSensitive = false,
   } = options;
 
-  const normalizedQuery = caseSensitive ? query : query.toLowerCase();
+  const normalizedQuery = caseSensitive
+    ? query.normalize("NFC")
+    : query.normalize("NFC").toLowerCase();
 
   return entries.filter((entry) => {
-    const word = caseSensitive ? entry.word : entry.word.toLowerCase();
+    const word = caseSensitive
+      ? entry.word.normalize("NFC")
+      : entry.word.normalize("NFC").toLowerCase();
     const translation = caseSensitive
-      ? entry.translation
-      : entry.translation.toLowerCase();
+      ? entry.translation.normalize("NFC")
+      : entry.translation.normalize("NFC").toLowerCase();
 
     return (
       (searchWord && word.includes(normalizedQuery)) ||

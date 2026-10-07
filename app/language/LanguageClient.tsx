@@ -45,6 +45,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import {
   TSINTSKARO_ALPHABET,
+  searchDictionary,
   formatDictionaryWord,
   getWordLetter,
 } from "@/lib/data/dictionary";
@@ -129,12 +130,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
     }
 
     if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      result = result.filter(
-        (entry) =>
-          entry.word.toLowerCase().includes(query) ||
-          entry.translation.toLowerCase().includes(query)
-      );
+      result = searchDictionary(result, searchQuery.trim());
     }
 
     return result;

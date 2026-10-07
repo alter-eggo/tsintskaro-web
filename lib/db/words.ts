@@ -62,7 +62,7 @@ function optionalText(value: string | null): string | undefined {
 }
 
 function validateAndNormalizeInput(input: AddWordInput) {
-  const word = input.word.trim().toLowerCase();
+  const word = input.word.normalize("NFC").trim().toLowerCase();
   const translation = input.translation.trim();
   const partOfSpeech = input.partOfSpeech?.trim() || null;
 
