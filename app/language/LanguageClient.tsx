@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 import { addDictionaryWord } from "@/app/language/actions";
+import { DictionaryTranslation } from "./DictionaryTranslation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -84,15 +85,15 @@ function normalizePartOfSpeech(partOfSpeech: string | undefined) {
 
 function matchesPartOfSpeech(
   entry: DictionaryEntry,
-  variants: string[]
+  variants: string[],
 ): boolean {
-  const normalized = normalizePartOfSpeech(entry.partOfSpeech);
-
-  if (!normalized) {
-    return false;
-  }
-
-  return variants.includes(normalized);
+  return [
+    entry.partOfSpeech,
+    ...(entry.senses ?? []).map((sense) => sense.partOfSpeech ?? undefined),
+  ].some((part) => {
+    const normalized = normalizePartOfSpeech(part);
+    return normalized ? variants.includes(normalized) : false;
+  });
 }
 
 export function LanguageClient({ entries }: LanguageClientProps) {
@@ -125,7 +126,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
 
     if (selectedLetter) {
       result = result.filter(
-        (entry) => getWordLetter(entry.word) === selectedLetter
+        (entry) => getWordLetter(entry.word) === selectedLetter,
       );
     }
 
@@ -146,13 +147,13 @@ export function LanguageClient({ entries }: LanguageClientProps) {
   const stats = {
     totalWords: entries.length,
     nouns: entries.filter((entry) =>
-      matchesPartOfSpeech(entry, ["сущ", "существительное", "существительные"])
+      matchesPartOfSpeech(entry, ["сущ", "существительное", "существительные"]),
     ).length,
     verbs: entries.filter((entry) =>
-      matchesPartOfSpeech(entry, ["гл", "глагол"])
+      matchesPartOfSpeech(entry, ["гл", "глагол"]),
     ).length,
     adjectives: entries.filter((entry) =>
-      matchesPartOfSpeech(entry, ["прил", "прилагательное", "прилагательный"])
+      matchesPartOfSpeech(entry, ["прил", "прилагательное", "прилагательный"]),
     ).length,
   };
 
@@ -207,7 +208,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
     try {
       window.localStorage.setItem(
         ADD_WORD_PASSWORD_STORAGE_KEY,
-        ADD_WORD_PASSWORD
+        ADD_WORD_PASSWORD,
       );
     } catch {
       // If localStorage is unavailable, still allow this session after a valid password.
@@ -243,9 +244,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
       setFormStatus({
         type: "error",
         message:
-          error instanceof Error
-            ? error.message
-            : "Не удалось сохранить слово",
+          error instanceof Error ? error.message : "Не удалось сохранить слово",
       });
     } finally {
       setIsSubmitting(false);
@@ -288,7 +287,10 @@ export function LanguageClient({ entries }: LanguageClientProps) {
 
             <form className="space-y-4" onSubmit={handlePasswordSubmit}>
               <div className="space-y-2">
-                <label className="text-sm font-medium" htmlFor="add-word-password">
+                <label
+                  className="text-sm font-medium"
+                  htmlFor="add-word-password"
+                >
                   Пароль
                 </label>
                 <Input
@@ -393,7 +395,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
                     "rounded-md border px-3 py-2 text-sm",
                     formStatus.type === "success"
                       ? "border-green-200 bg-green-50 text-green-700"
-                      : "border-destructive/30 bg-destructive/10 text-destructive"
+                      : "border-destructive/30 bg-destructive/10 text-destructive",
                   )}
                 >
                   {formStatus.message}
@@ -467,7 +469,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
                       : "bg-muted hover:bg-muted/80",
                     !hasEntries &&
                       selectedLetter !== letter &&
-                      "text-muted-foreground/50"
+                      "text-muted-foreground/50",
                   )}
                 >
                   {letter}
@@ -508,19 +510,37 @@ export function LanguageClient({ entries }: LanguageClientProps) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[250px]">Слово</TableHead>
+                    <TableHead className="w-[30%] sm:w-[250px]">
+                      Слово
+                    </TableHead>
                     <TableHead>Перевод</TableHead>
-                    <TableHead className="w-[180px]">Часть речи</TableHead>
+                    <TableHead className="hidden w-[180px] sm:table-cell">
+                      Часть речи
+                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedEntries.map((entry, index) => (
                     <TableRow key={`${entry.word}-${index}`}>
-                      <TableCell className="font-medium">
+                      <TableCell className="align-top font-medium [overflow-wrap:anywhere]">
                         {formatDictionaryWord(entry.word)}
+                        {entry.kind && entry.kind !== "word" && (
+                          <div className="mt-1 text-xs font-normal text-muted-foreground">
+                            {entry.kind === "idiom"
+                              ? "Фразеологизм"
+                              : "Пословица/поговорка"}
+                          </div>
+                        )}
+                        {entry.partOfSpeech && (
+                          <div className="mt-1 text-xs font-normal text-muted-foreground sm:hidden">
+                            {entry.partOfSpeech}
+                          </div>
+                        )}
                       </TableCell>
-                      <TableCell>{entry.translation}</TableCell>
-                      <TableCell>
+                      <TableCell className="align-top">
+                        <DictionaryTranslation entry={entry} />
+                      </TableCell>
+                      <TableCell className="hidden align-top sm:table-cell">
                         {entry.partOfSpeech && (
                           <Badge variant="secondary">
                             {entry.partOfSpeech}
@@ -535,7 +555,9 @@ export function LanguageClient({ entries }: LanguageClientProps) {
               {totalPages > 1 && (
                 <div className="mt-4 flex items-center justify-center gap-2">
                   <button
-                    onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                    onClick={() =>
+                      setCurrentPage((page) => Math.max(1, page - 1))
+                    }
                     disabled={currentPage === 1}
                     className="rounded-md bg-muted px-3 py-1 text-sm font-medium hover:bg-muted/80 disabled:cursor-not-allowed disabled:opacity-50"
                   >

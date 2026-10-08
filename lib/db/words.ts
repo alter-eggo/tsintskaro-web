@@ -9,6 +9,10 @@ type WordRow = {
   translation: string;
   partOfSpeech: string | null;
   comments: string | null;
+  senses?: DictionaryEntry["senses"] | null;
+  kind?: DictionaryEntry["kind"];
+  literalTranslation?: string | null;
+  aliases?: string[] | null;
 };
 
 type AddWordInput = {
@@ -87,7 +91,17 @@ function validateAndNormalizeInput(input: AddWordInput) {
 
 export async function getAllWords(): Promise<DictionaryEntry[]> {
   const result = await getPool().query<WordRow>(
-    'SELECT word, translation, "partOfSpeech", comments FROM word'
+    `SELECT w.word, w.translation, w."partOfSpeech", w.comments,
+       to_jsonb(w)->'senses' AS senses, to_jsonb(w)->>'kind' AS kind,
+       to_jsonb(w)->>'literalTranslation' AS "literalTranslation",
+       linked.aliases
+     FROM word w
+     LEFT JOIN (
+       SELECT (to_jsonb(old)->>'relatedWordId')::int AS target_id, jsonb_agg(old.word) AS aliases
+       FROM word old WHERE to_jsonb(old)->>'status' IN ('embedded', 'merged')
+       GROUP BY (to_jsonb(old)->>'relatedWordId')::int
+     ) linked ON linked.target_id = w.id
+     WHERE COALESCE(to_jsonb(w)->>'status', 'active') = 'active'`,
   );
 
   return result.rows.map((row) => ({
@@ -95,24 +109,36 @@ export async function getAllWords(): Promise<DictionaryEntry[]> {
     translation: row.translation,
     partOfSpeech: optionalText(row.partOfSpeech),
     comments: optionalText(row.comments),
+    ...(row.senses?.length ? { senses: row.senses } : {}),
+    ...(row.kind ? { kind: row.kind } : {}),
+    ...(row.literalTranslation
+      ? { literalTranslation: row.literalTranslation }
+      : {}),
+    ...(row.aliases?.length ? { aliases: row.aliases } : {}),
   }));
 }
 
 export async function addWord(
-  input: AddWordInput
+  input: AddWordInput,
 ): Promise<{ created: boolean }> {
   const { word, translation, partOfSpeech } = validateAndNormalizeInput(input);
 
   const result = await getPool().query<{ created: boolean }>(
-    `INSERT INTO word (word, translation, "partOfSpeech", source, "addedBy", "createdAt", "updatedAt")
+    `INSERT INTO word AS existing (word, translation, "partOfSpeech", source, "addedBy", "createdAt", "updatedAt")
      VALUES ($1, $2, $3, 'website', 'website', NOW(), NOW())
      ON CONFLICT (word) DO UPDATE
      SET translation = EXCLUDED.translation,
          "partOfSpeech" = EXCLUDED."partOfSpeech",
          "updatedAt" = NOW()
+     WHERE COALESCE(to_jsonb(existing)->>'status', 'active') = 'active'
+       AND (to_jsonb(existing)->'senses' IS NULL OR to_jsonb(existing)->'senses' IN ('null'::jsonb, '[]'::jsonb))
      RETURNING ("xmax" = 0) AS created`,
-    [word, translation, partOfSpeech]
+    [word, translation, partOfSpeech],
   );
 
-  return { created: result.rows[0]?.created ?? false };
+  if (!result.rows.length)
+    throw new Error(
+      "У этой записи есть значения и примеры либо она перенесена или отложена. Измените её через бота, указав нужное значение или пример.",
+    );
+  return { created: result.rows[0].created };
 }

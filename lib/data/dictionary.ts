@@ -2,6 +2,12 @@
  * Types and utilities for the Urum dictionary
  */
 
+export interface DictionarySense {
+  translation: string | null;
+  partOfSpeech?: string | null;
+  examples: { phrase: string; translation: string; aliases?: string[] }[];
+}
+
 export interface DictionaryEntry {
   /** The Urum word */
   word: string;
@@ -11,6 +17,10 @@ export interface DictionaryEntry {
   partOfSpeech?: string;
   /** Additional comments (optional) */
   comments?: string;
+  senses?: DictionarySense[];
+  kind?: "word" | "idiom" | "proverb";
+  literalTranslation?: string;
+  aliases?: string[];
 }
 
 /**
@@ -18,11 +28,46 @@ export interface DictionaryEntry {
  * Includes multi-character letters: Гх, Дж, Хг
  */
 export const TSINTSKARO_ALPHABET = [
-  "А", "Â", "Б", "В", "Г", "Гх", "Д", "Дж",
-  "Е", "Ê", "Ё", "Ж", "З", "И", "Û", "Й", "К",
-  "Л", "М", "Н", "О", "Ô", "П", "Р", "С",
-  "Т", "У", "Ŷ", "Ф", "Х", "Хг", "Ц", "Ч",
-  "Ш", "Щ", "Ы", "Ь", "Э", "Ю", "Я",
+  "А",
+  "Â",
+  "Б",
+  "В",
+  "Г",
+  "Гх",
+  "Д",
+  "Дж",
+  "Е",
+  "Ê",
+  "Ё",
+  "Ж",
+  "З",
+  "И",
+  "Û",
+  "Й",
+  "К",
+  "Л",
+  "М",
+  "Н",
+  "О",
+  "Ô",
+  "П",
+  "Р",
+  "С",
+  "Т",
+  "У",
+  "Ŷ",
+  "Ф",
+  "Х",
+  "Хг",
+  "Ц",
+  "Ч",
+  "Ш",
+  "Щ",
+  "Ы",
+  "Ь",
+  "Э",
+  "Ю",
+  "Я",
 ] as const;
 
 /**
@@ -132,7 +177,7 @@ export interface Dictionary {
  */
 export async function loadDictionary(): Promise<Dictionary> {
   throw new Error(
-    "Static dictionary JSON has been removed. Use getAllWords() from @/lib/db/words in server code."
+    "Static dictionary JSON has been removed. Use getAllWords() from @/lib/db/words in server code.",
   );
 }
 
@@ -146,7 +191,7 @@ export function searchDictionary(
     searchWord?: boolean;
     searchTranslation?: boolean;
     caseSensitive?: boolean;
-  } = {}
+  } = {},
 ): DictionaryEntry[] {
   const {
     searchWord = true,
@@ -162,12 +207,27 @@ export function searchDictionary(
     const word = caseSensitive
       ? entry.word.normalize("NFC")
       : entry.word.normalize("NFC").toLowerCase();
+    const translationText = [entry.translation, entry.literalTranslation]
+      .filter(Boolean)
+      .join("; ");
     const translation = caseSensitive
-      ? entry.translation.normalize("NFC")
-      : entry.translation.normalize("NFC").toLowerCase();
+      ? translationText.normalize("NFC")
+      : translationText.normalize("NFC").toLowerCase();
 
+    const phrases = [
+      ...(entry.aliases ?? []),
+      ...(entry.senses ?? []).flatMap((s) =>
+        s.examples.flatMap((e) => [e.phrase, ...(e.aliases ?? [])]),
+      ),
+    ];
+    const exampleMatch = phrases.some((phrase) =>
+      (caseSensitive
+        ? phrase.normalize("NFC")
+        : phrase.normalize("NFC").toLowerCase()
+      ).includes(normalizedQuery),
+    );
     return (
-      (searchWord && word.includes(normalizedQuery)) ||
+      (searchWord && (word.includes(normalizedQuery) || exampleMatch)) ||
       (searchTranslation && translation.includes(normalizedQuery))
     );
   });
@@ -178,11 +238,10 @@ export function searchDictionary(
  */
 export function filterByPartOfSpeech(
   entries: DictionaryEntry[],
-  partOfSpeech: string
+  partOfSpeech: string,
 ): DictionaryEntry[] {
   return entries.filter(
-    (entry) =>
-      entry.partOfSpeech?.toLowerCase() === partOfSpeech.toLowerCase()
+    (entry) => entry.partOfSpeech?.toLowerCase() === partOfSpeech.toLowerCase(),
   );
 }
 
@@ -205,7 +264,7 @@ export function getPartsOfSpeech(entries: DictionaryEntry[]): string[] {
  */
 export function getEntriesByLetter(
   entries: DictionaryEntry[],
-  letter: string
+  letter: string,
 ): DictionaryEntry[] {
   return entries.filter((entry) => getWordLetter(entry.word) === letter);
 }
@@ -216,7 +275,7 @@ export function getEntriesByLetter(
  */
 export function getAlphabet(
   entries?: DictionaryEntry[],
-  onlyWithEntries = false
+  onlyWithEntries = false,
 ): string[] {
   if (!onlyWithEntries || !entries) {
     return [...TSINTSKARO_ALPHABET];
