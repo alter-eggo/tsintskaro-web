@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "test:dictionary": "node scripts/check-dictionary.mjs",
+    "test:dictionary": "node scripts/check-dictionary.mjs && node scripts/check-dictionary-layout.mjs",
     "test:dictionary-reviews": "node --env-file-if-exists=.env scripts/check-dictionary-reviews.mjs",
     "test:graveyard-viewer": "node scripts/check-graveyard-viewer.mjs",
     "check:history": "node scripts/check-history.mjs"

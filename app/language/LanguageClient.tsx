@@ -15,8 +15,7 @@ import {
 } from "lucide-react";
 
 import { addDictionaryWord } from "@/app/language/actions";
-import { DictionaryTranslation } from "./DictionaryTranslation";
-import { Badge } from "@/components/ui/badge";
+import { DictionaryRows } from "./DictionaryTranslation";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -38,7 +37,6 @@ import {
 import {
   Table,
   TableBody,
-  TableCell,
   TableHead,
   TableHeader,
   TableRow,
@@ -48,7 +46,6 @@ import { cn } from "@/lib/utils";
 import {
   TSINTSKARO_ALPHABET,
   searchDictionary,
-  formatDictionaryWord,
   getWordLetter,
 } from "@/lib/data/dictionary";
 import type { DictionaryEntry } from "@/lib/data/dictionary";
@@ -547,39 +544,13 @@ export function LanguageClient({ entries }: LanguageClientProps) {
                     </TableHead>
                     <TableHead>Перевод</TableHead>
                     <TableHead className="hidden w-[180px] sm:table-cell">
-                      Часть речи
+                      Часть речи / тип записи
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {paginatedEntries.map((entry, index) => (
-                    <TableRow key={`${entry.word}-${index}`}>
-                      <TableCell className="align-top font-medium [overflow-wrap:anywhere]">
-                        {formatDictionaryWord(entry.word)}
-                        {entry.kind && entry.kind !== "word" && (
-                          <div className="mt-1 text-xs font-normal text-muted-foreground">
-                            {entry.kind === "idiom"
-                              ? "Фразеологизм"
-                              : "Пословица/поговорка"}
-                          </div>
-                        )}
-                        {entry.partOfSpeech && (
-                          <div className="mt-1 text-xs font-normal text-muted-foreground sm:hidden">
-                            {entry.partOfSpeech}
-                          </div>
-                        )}
-                      </TableCell>
-                      <TableCell className="align-top">
-                        <DictionaryTranslation entry={entry} />
-                      </TableCell>
-                      <TableCell className="hidden align-top sm:table-cell">
-                        {entry.partOfSpeech && (
-                          <Badge variant="secondary">
-                            {entry.partOfSpeech}
-                          </Badge>
-                        )}
-                      </TableCell>
-                    </TableRow>
+                    <DictionaryRows key={`${entry.word}-${index}`} entry={entry} />
                   ))}
                 </TableBody>
               </Table>
