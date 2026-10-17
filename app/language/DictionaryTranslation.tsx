@@ -1,6 +1,7 @@
 import type { DictionaryEntry } from "@/lib/data/dictionary";
 import { formatDictionaryWord } from "@/lib/data/dictionary";
 import { Fragment } from "react";
+import { CheckCheck } from "lucide-react";
 import { TableCell, TableRow } from "@/components/ui/table";
 
 export function DictionaryTranslation({
@@ -67,6 +68,18 @@ export function DictionaryRows({ entry }: { entry: DictionaryEntry }) {
                 className="align-top font-medium [overflow-wrap:anywhere]"
               >
                 {formatDictionaryWord(entry.word)}
+                {entry.isReviewed && (
+                  <span
+                    className="ml-1.5 inline-flex align-middle text-muted-foreground"
+                    title="Слово разобрано"
+                  >
+                    <CheckCheck
+                      className="size-3.5"
+                      role="img"
+                      aria-label="Слово разобрано"
+                    />
+                  </span>
+                )}
               </TableCell>
             )}
             <TableCell className="align-top [overflow-wrap:anywhere]">
