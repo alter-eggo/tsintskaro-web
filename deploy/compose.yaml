@@ -1,0 +1,29 @@
+name: tsintskaro
+services:
+  tsintskaro:
+    image: local/tsintskaro:298458e40dff0a71801d6731fe63888ec89f7677
+    env_file: ./secrets/tsintskaro.env
+    environment:
+      NODE_OPTIONS: --max-old-space-size=512
+    restart: unless-stopped
+    init: true
+    mem_limit: 768m
+    security_opt: [no-new-privileges:true]
+    cap_drop: [ALL]
+    ports: ["127.0.0.1:3107:3000"]
+    networks: [web]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/', {signal: AbortSignal.timeout(4000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+networks:
+  web:
+    external: true
+    name: constmed_default

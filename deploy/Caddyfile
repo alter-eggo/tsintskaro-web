@@ -1,0 +1,4 @@
+tsintskaro.tw1.ru {
+    encode zstd gzip
+    reverse_proxy tsintskaro:3000
+}
