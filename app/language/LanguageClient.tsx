@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import {
   BookOpenText,
   BookText,
+  CheckCheck,
   Hash,
   Languages,
   Loader2,
@@ -102,6 +103,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedLetter, setSelectedLetter] = useState<string | null>(null);
+  const [onlyReviewed, setOnlyReviewed] = useState(false);
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [password, setPassword] = useState("");
@@ -112,17 +114,23 @@ export function LanguageClient({ entries }: LanguageClientProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formStatus, setFormStatus] = useState<FormStatus>(null);
 
+  const reviewedEntries = useMemo(
+    () => entries.filter((entry) => entry.isReviewed),
+    [entries],
+  );
+  const visibleEntries = onlyReviewed ? reviewedEntries : entries;
+
   const lettersWithEntries = useMemo(() => {
     const usedLetters = new Set<string>();
-    entries.forEach((entry) => {
+    visibleEntries.forEach((entry) => {
       const letter = getWordLetter(entry.word);
       if (letter) usedLetters.add(letter);
     });
     return usedLetters;
-  }, [entries]);
+  }, [visibleEntries]);
 
   const filteredEntries = useMemo(() => {
-    let result = entries;
+    let result = visibleEntries;
 
     if (selectedLetter) {
       result = result.filter(
@@ -135,7 +143,7 @@ export function LanguageClient({ entries }: LanguageClientProps) {
     }
 
     return result;
-  }, [entries, searchQuery, selectedLetter]);
+  }, [visibleEntries, searchQuery, selectedLetter]);
 
   const paginatedEntries = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
@@ -443,14 +451,35 @@ export function LanguageClient({ entries }: LanguageClientProps) {
 
       <Card>
         <CardContent className="space-y-4 pt-6">
-          <div className="relative">
-            <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Введите слово для поиска на любом языке"
-              value={searchQuery}
-              onChange={(event) => handleSearchChange(event.target.value)}
-              className="pl-10"
-            />
+          <div className="flex items-center gap-2">
+            <div className="relative min-w-0 flex-1">
+              <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                aria-label="Поиск по словарю"
+                placeholder="Введите слово для поиска на любом языке"
+                value={searchQuery}
+                onChange={(event) => handleSearchChange(event.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              variant={onlyReviewed ? "default" : "outline"}
+              className="h-9 gap-1.5 px-2.5"
+              aria-label={`Только разобранные: ${reviewedEntries.length}`}
+              title="Только разобранные слова"
+              aria-pressed={onlyReviewed}
+              onClick={() => {
+                setOnlyReviewed((value) => !value);
+                setCurrentPage(1);
+              }}
+            >
+              <CheckCheck className="h-4 w-4" aria-hidden="true" />
+              <span className="tabular-nums" aria-hidden="true">
+                {reviewedEntries.length}
+              </span>
+            </Button>
           </div>
 
           <div className="flex flex-wrap gap-1">
@@ -498,7 +527,10 @@ export function LanguageClient({ entries }: LanguageClientProps) {
               <BookText className="h-5 w-5" />
               Словарь
             </span>
-            <span className="text-sm font-normal text-muted-foreground">
+            <span
+              role="status"
+              className="text-sm font-normal text-muted-foreground"
+            >
               Показано {paginatedEntries.length} из {filteredEntries.length}{" "}
               слов
             </span>
@@ -583,8 +615,25 @@ export function LanguageClient({ entries }: LanguageClientProps) {
               <BookText className="mb-4 h-12 w-12 text-muted-foreground" />
               <h3 className="mb-2 text-lg font-semibold">Слова не найдены</h3>
               <p className="text-center text-muted-foreground">
-                Попробуйте изменить поисковый запрос или выберите другую букву
+                {onlyReviewed && reviewedEntries.length === 0
+                  ? "Пока нет слов с сохранёнными правками или подтверждённым разбором."
+                  : onlyReviewed
+                    ? "Среди разобранных слов нет совпадений. Измените запрос или выберите другую букву."
+                    : "Попробуйте изменить поисковый запрос или выберите другую букву"}
               </p>
+              {onlyReviewed && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="mt-4 min-h-11"
+                  onClick={() => {
+                    setOnlyReviewed(false);
+                    setCurrentPage(1);
+                  }}
+                >
+                  Отключить фильтр
+                </Button>
+              )}
             </div>
           )}
         </CardContent>

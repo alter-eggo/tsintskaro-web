@@ -9,6 +9,7 @@ type WordRow = {
   translation: string;
   partOfSpeech: string | null;
   comments: string | null;
+  isReviewed: boolean;
   senses?: DictionaryEntry["senses"] | null;
   kind?: DictionaryEntry["kind"];
   literalTranslation?: string | null;
@@ -94,8 +95,42 @@ export async function getAllWords(): Promise<DictionaryEntry[]> {
     `SELECT w.word, w.translation, w."partOfSpeech", w.comments,
        to_jsonb(w)->'senses' AS senses, to_jsonb(w)->>'kind' AS kind,
        to_jsonb(w)->>'literalTranslation' AS "literalTranslation",
-       linked.aliases
+       linked.aliases,
+       (COALESCE(review.status = 'confirmed', false) OR (
+         review.status IS DISTINCT FROM 'disputed' AND (
+           edited."wordId" IS NOT NULL OR (
+             review."wordId" IS NOT NULL AND
+             (w.word, w.translation, w."partOfSpeech") IS DISTINCT FROM
+             (review."originalWord", review."originalTranslation", review."partOfSpeech")
+           )
+         )
+       )) AS "isReviewed"
      FROM word w
+     LEFT JOIN (
+       SELECT DISTINCT ON (i."wordId") i."wordId", i.status,
+         i."originalWord", i."originalTranslation", i."partOfSpeech"
+       FROM word_review_item i
+       JOIN word_review_batch b ON b.id = i."batchId"
+       WHERE b."reviewFlow" = 'dictionary' AND b.status IN ('published', 'completed')
+       ORDER BY i."wordId", b."createdAt" DESC, b.id DESC, i.id DESC
+     ) review ON review."wordId" = w.id
+     LEFT JOIN (
+       SELECT "wordId" FROM word_translation_history
+       WHERE "previousTranslation" IS DISTINCT FROM translation
+       UNION
+       SELECT (changed->>'id')::int AS "wordId"
+       FROM word_edit_history h
+       CROSS JOIN LATERAL jsonb_array_elements(h."after") changed
+       JOIN LATERAL jsonb_array_elements(h."before") previous
+         ON previous->>'id' = changed->>'id'
+       WHERE jsonb_build_array(
+         changed->'word', changed->'translation', changed->'partOfSpeech',
+         changed->'comments', changed->'senses', changed->'kind', changed->'literalTranslation'
+       ) IS DISTINCT FROM jsonb_build_array(
+         previous->'word', previous->'translation', previous->'partOfSpeech',
+         previous->'comments', previous->'senses', previous->'kind', previous->'literalTranslation'
+       )
+     ) edited ON edited."wordId" = w.id
      LEFT JOIN (
        SELECT (to_jsonb(old)->>'relatedWordId')::int AS target_id, jsonb_agg(old.word) AS aliases
        FROM word old WHERE to_jsonb(old)->>'status' IN ('embedded', 'merged')
@@ -109,6 +144,7 @@ export async function getAllWords(): Promise<DictionaryEntry[]> {
     translation: row.translation,
     partOfSpeech: optionalText(row.partOfSpeech),
     comments: optionalText(row.comments),
+    isReviewed: row.isReviewed,
     ...(row.senses?.length ? { senses: row.senses } : {}),
     ...(row.kind ? { kind: row.kind } : {}),
     ...(row.literalTranslation

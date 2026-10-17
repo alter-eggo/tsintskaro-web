@@ -17,6 +17,8 @@ export interface DictionaryEntry {
   partOfSpeech?: string;
   /** Additional comments (optional) */
   comments?: string;
+  /** Confirmed review or saved editorial changes, unless explicitly disputed. */
+  isReviewed?: boolean;
   senses?: DictionarySense[];
   kind?: "word" | "idiom" | "proverb";
   literalTranslation?: string;
